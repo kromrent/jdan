@@ -649,6 +649,9 @@ button{font-family:inherit;cursor:pointer}
   .footer-grid{grid-template-columns:1fr;gap:30px}
   .send-buttons{grid-template-columns:1fr}
   .section-head{margin-bottom:32px}
+  /* облегчаем верх на телефоне: «шарик» меньше и деликатнее, меньше пустоты снизу hero */
+  .hero{padding-bottom:clamp(30px,6vw,60px)}
+  .hero-blob{width:min(38vw,240px);opacity:.4;top:clamp(80px,12vh,150px)}
 }
 @media (max-width:420px){
   .container{padding:0 16px}
