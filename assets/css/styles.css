@@ -189,7 +189,7 @@ button{font-family:inherit;cursor:pointer}
 /* ============================= HERO ============================= */
 .hero{
   position:relative;overflow:hidden;
-  padding:clamp(70px,11vw,140px) 0 clamp(30px,4.5vw,60px);
+  padding:clamp(70px,11vw,140px) 0 clamp(50px,7vw,96px);
   text-align:center;
 }
 /* деликатные радиальные акценты фона */
@@ -259,7 +259,7 @@ button{font-family:inherit;cursor:pointer}
   display:inline-flex;align-items:center;gap:8px;
 }
 .hero-divider{
-  margin:22px auto 0;width:1px;height:30px;
+  margin:46px auto 0;width:1px;height:46px;
   background:linear-gradient(var(--gold-soft),transparent);
 }
 
@@ -359,7 +359,7 @@ button{font-family:inherit;cursor:pointer}
 }
 
 /* ============================= КАТАЛОГ ============================= */
-.catalog{padding:clamp(44px,7vw,84px) 0}
+.catalog{padding:clamp(64px,9vw,108px) 0}
 .filters{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-bottom:12px}
 /* 2-й ряд — фильтр по полу: чуть мельче, с отступом до сетки */
 .filters-gender{margin-bottom:clamp(34px,5vh,46px)}
