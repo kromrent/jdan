@@ -118,9 +118,30 @@
   }
 
   /* =================================================================
-     ФИЛЬТР ПО БРЕНДУ
+     ФИЛЬТРЫ: бренд (1-й ряд) + пол (2-й ряд), работают вместе (И)
      ================================================================= */
   let activeBrand = "Все";
+  let activeGender = "Все";
+
+  // пер-карточный цвет: [свечение на ховере, цвет бренд-лейбла] — свой у каждого аромата (палитра SILLAGE)
+  const GLOW = {
+    "cc-jump-up": ["#8B9ED6", "#3A4E8E"], "cc-rock-rose": ["#C77A6E", "#7E2E33"], "cc-no1": ["#E3C079", "#A87B28"],
+    "cc-iconic-feminine": ["#7FB3B8", "#2F6B73"], "cc-cosmos-flower": ["#C77A8E", "#5A2E33"],
+    "penhaligons-constance": ["#C2A06A", "#7A5A38"], "byredo-oud-immortel": ["#CDBFA8", "#8A6A4A"],
+    "byredo-mixed-emotions": ["#C2BBAE", "#7C7363"], "byredo-bibliotheque": ["#D2B488", "#9A6F3E"],
+    "byredo-rose-no-mans-land": ["#D98A90", "#9E3B45"], "max-philip-mandarin": ["#F0B85A", "#D07A1E"],
+    "amouage-crimson-rocks": ["#D98A86", "#8A3A30"], "amouage-love-tuberose": ["#E8C9C2", "#C08A7E"],
+    "amouage-cristal-gold": ["#E6D6A6", "#C0A24E"], "amouage-reflection-woman": ["#D9B8BE", "#A06C84"],
+    "lv-symphony": ["#D8CDBA", "#9A8A6A"], "lv-cosmic-cloud": ["#CFC6B4", "#8E8266"],
+    "lv-dancing-blossom": ["#E3C7C0", "#B07A82"], "lv-myriad": ["#DCC9A8", "#A88A5A"],
+    "nishane-afrika-olifant": ["#C2A06A", "#6E5A3C"], "nishane-fan-your-flames": ["#7C9A6A", "#3C5A43"],
+    "nishane-ani": ["#E0C28A", "#A8833C"], "nishane-wulong-cha-x": ["#D6C98A", "#A98C4C"],
+  };
+  const glowStyle = (id) => {
+    const g = GLOW[id];
+    return g ? `--c-glow:${g[0]};--c-ink:${g[1]}` : "";
+  };
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
   function renderFilters() {
     const brands = ["Все", ...Array.from(new Set(PRODUCTS.map((p) => p.brand)))];
@@ -138,18 +159,38 @@
     });
   }
 
+  function renderGenderFilters() {
+    const wrap = $("#genderFilters");
+    if (!wrap) return;
+    const genders = ["Все", ...Array.from(new Set(PRODUCTS.map((p) => p.gender).filter(Boolean)))];
+    wrap.innerHTML = genders
+      .map((g) => `<button class="filter-chip${g === activeGender ? " active" : ""}" data-gender="${esc(g)}">${esc(g === "Все" ? "Все" : cap(g))}</button>`)
+      .join("");
+    $$(".filter-chip", wrap).forEach((chip) => {
+      chip.addEventListener("click", () => {
+        activeGender = chip.dataset.gender;
+        renderGenderFilters();
+        renderCatalog();
+        revealInit();
+      });
+    });
+  }
+
   /* =================================================================
      КАТАЛОГ
      ================================================================= */
   function renderCatalog() {
     const grid = $("#catalogGrid");
-    const list = activeBrand === "Все" ? PRODUCTS : PRODUCTS.filter((p) => p.brand === activeBrand);
+    const list = PRODUCTS.filter(
+      (p) => (activeBrand === "Все" || p.brand === activeBrand) &&
+             (activeGender === "Все" || p.gender === activeGender)
+    );
 
     grid.innerHTML = list
       .map((p) => {
         const notes = inlineNotes(p);
         return `
-        <article class="card reveal" data-id="${esc(p.id)}">
+        <article class="card reveal" data-id="${esc(p.id)}" style="${glowStyle(p.id)}">
           <div class="card-media">
             ${hasDisc() && p.price3 > 0 ? `<span class="card-sale">−${DISC}%</span>` : ""}
             <span class="card-vol-badge">3 мл</span>
@@ -234,6 +275,17 @@
     saveCart(cart);
     updateCartUI();
   }
+  // смена объёма позиции прямо в корзине (если такой объём уже есть — объединяем)
+  function changeVol(key, newVol) {
+    const it = cart.find((i) => i.key === key);
+    if (!it || it.vol === newVol) return;
+    const newKey = it.id + "_" + newVol;
+    const existing = cart.find((i) => i.key === newKey);
+    if (existing) { existing.qty += it.qty; cart = cart.filter((i) => i.key !== key); }
+    else { it.vol = newVol; it.key = newKey; }
+    saveCart(cart);
+    updateCartUI();
+  }
 
   function cartTotals() {
     let total = 0, unknown = 0, count = 0;
@@ -253,6 +305,8 @@
     const countEl = $("#cartCount");
     countEl.textContent = count;
     countEl.hidden = count === 0;
+    const fabCount = $("#cartFabCount");
+    if (fabCount) { fabCount.textContent = count; fabCount.hidden = count === 0; }
 
     const itemsEl = $("#cartItems");
     const emptyEl = $("#cartEmpty");
@@ -277,7 +331,9 @@
             <div class="cart-item-info">
               <div class="cart-item-brand">${esc(p.brand)}</div>
               <div class="cart-item-name">${esc(p.name)}</div>
-              <div class="cart-item-vol">${i.vol} мл · ${fmtPrice(pr)}</div>
+              <div class="cart-item-vols" role="group" aria-label="Объём">
+                ${[3, 4, 5].map((v) => `<button data-act="vol" data-key="${esc(i.key)}" data-vol="${v}" class="civol${v === i.vol ? " on" : ""}" aria-pressed="${v === i.vol}">${v} мл</button>`).join("")}
+              </div>
               <div class="cart-item-bottom">
                 <div class="qty">
                   <button data-act="dec" data-key="${esc(i.key)}" aria-label="Меньше">−</button>
@@ -297,6 +353,7 @@
         btn.addEventListener("click", () => {
           if (btn.dataset.act === "inc") changeQty(key, 1);
           else if (btn.dataset.act === "dec") changeQty(key, -1);
+          else if (btn.dataset.act === "vol") changeVol(key, Number(btn.dataset.vol));
           else removeItem(key);
         });
       });
@@ -511,11 +568,22 @@
   function init() {
     applyConfig();
     renderFilters();
+    renderGenderFilters();
     renderCatalog();
     updateCartUI();
     revealInit();
 
     $("#cartBtn").addEventListener("click", openCart);
+
+    // плавающая корзина: открытие по клику + появление при прокрутке вниз
+    const fab = $("#cartFab");
+    if (fab) {
+      fab.addEventListener("click", openCart);
+      const onScroll = () => fab.classList.toggle("show", window.scrollY > 420);
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
+
     $("#cartClose").addEventListener("click", closeCart);
     $("#checkoutBtn").addEventListener("click", () => { closeCart(); openCheckout(); });
     $("#checkoutClose").addEventListener("click", closeCheckout);

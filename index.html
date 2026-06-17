@@ -9,11 +9,13 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
 
+  <!-- ВЕРХНИЙ БЛОК: плашка скидки + шапка — липкие, всегда сверху -->
+  <div class="topbar" id="topbar">
   <!-- ПЛАШКА СКИДКИ -->
   <div class="promo-bar" id="promoBar" hidden></div>
 
@@ -37,12 +39,18 @@
       </button>
     </div>
   </header>
+  </div>
 
   <!-- HERO -->
   <section class="hero" id="top">
+    <div class="hero-blob" aria-hidden="true"></div>
     <div class="container hero-inner reveal">
       <p class="hero-eyebrow">Оригинал · отливаем при заказе</p>
-      <h1 class="hero-title">Нишевая парфюмерия<br /><em>на распив</em></h1>
+      <h1 class="hero-title">
+        <span class="rw"><span style="animation-delay:.05s">Нишевая</span></span>
+        <span class="rw"><span style="animation-delay:.16s">парфюмерия</span></span><br />
+        <em><span class="rw"><span style="animation-delay:.32s">на</span></span> <span class="rw"><span style="animation-delay:.42s">распив</span></span></em>
+      </h1>
       <p class="hero-lead">Пробуйте дорогие ароматы в форматах <strong>3&nbsp;мл</strong> и <strong>5&nbsp;мл</strong> — без переплаты за полный флакон.</p>
       <div class="hero-actions">
         <a href="#catalog" class="btn btn-primary">Перейти к каталогу</a>
@@ -99,6 +107,7 @@
       </div>
 
       <div class="filters reveal" id="filters" aria-label="Фильтр по бренду"></div>
+      <div class="filters filters-gender reveal" id="genderFilters" aria-label="Фильтр по полу"></div>
 
       <div class="grid" id="catalogGrid"></div>
     </div>
@@ -149,6 +158,14 @@
 
   <!-- ЗАТЕМНЕНИЕ -->
   <div class="overlay" id="overlay" hidden></div>
+
+  <!-- ПЛАВАЮЩАЯ КОРЗИНА (появляется при прокрутке) -->
+  <button class="cart-fab" id="cartFab" aria-label="Открыть корзину">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M6 7h12l-1 13H7L6 7z" /><path d="M9 7a3 3 0 0 1 6 0" />
+    </svg>
+    <span class="cart-fab-count" id="cartFabCount" hidden>0</span>
+  </button>
 
   <!-- КОРЗИНА (drawer) -->
   <aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-label="Корзина">
