@@ -652,6 +652,12 @@ button{font-family:inherit;cursor:pointer}
   /* облегчаем верх на телефоне: «шарик» меньше и деликатнее, меньше пустоты снизу hero */
   .hero{padding-bottom:clamp(30px,6vw,60px)}
   .hero-blob{width:min(38vw,240px);opacity:.4;top:clamp(80px,12vh,150px)}
+  /* фильтры: одна прокручиваемая по горизонтали строка вместо 3–4 рядов */
+  .filters{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .filters::-webkit-scrollbar{display:none}
+  .filter-chip{flex:0 0 auto}
+  /* подзаголовок-инструкция каталога на телефоне лишний */
+  #catalog .section-sub{display:none}
 }
 @media (max-width:420px){
   .container{padding:0 16px}
