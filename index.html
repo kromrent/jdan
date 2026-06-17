@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Распив нишевой парфюмерии</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f6f3ee'/%3E%3Cpath d='M32 12 C44 30 46 38 32 50 C18 38 20 30 32 12 Z' fill='%23b9975b'/%3E%3C/svg%3E" />
+  <meta name="description" content="Распив оригинальной нишевой и люксовой парфюмерии: отливанты 3 и 5 мл. Clive Christian, Amouage, Byredo, Louis Vuitton, Nishane." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <!-- ПЛАШКА СКИДКИ -->
+  <div class="promo-bar" id="promoBar" hidden></div>
+
+  <!-- ШАПКА -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="#top" class="wordmark">
+        <span class="wordmark-name" data-shop-name>ATELIER</span>
+        <span class="wordmark-sub" data-shop-tagline>Распив нишевой парфюмерии</span>
+      </a>
+      <nav class="nav">
+        <a href="#catalog">Каталог</a>
+        <a href="#delivery">Оплата и доставка</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+      <button class="cart-btn" id="cartBtn" aria-label="Открыть корзину">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M6 7h12l-1 13H7L6 7z" /><path d="M9 7a3 3 0 0 1 6 0" />
+        </svg>
+        <span class="cart-count" id="cartCount" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="container hero-inner reveal">
+      <p class="hero-eyebrow">Оригинал · отливаем при заказе</p>
+      <h1 class="hero-title">Нишевая парфюмерия<br /><em>на распив</em></h1>
+      <p class="hero-lead">Пробуйте дорогие ароматы в форматах <strong>3&nbsp;мл</strong> и <strong>5&nbsp;мл</strong> — без переплаты за полный флакон.</p>
+      <div class="hero-actions">
+        <a href="#catalog" class="btn btn-primary">Перейти к каталогу</a>
+        <a href="#delivery" class="btn btn-ghost">Оплата и доставка</a>
+      </div>
+      <p class="hero-note">Товар сертификации и маркировке не подлежит (объём до 5&nbsp;мл).</p>
+      <div class="hero-divider" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- БРЕНДЫ + ДОВЕРИЕ -->
+  <section class="brands">
+    <div class="container reveal">
+      <span class="eyebrow brands-eyebrow">Бренды в наличии</span>
+    </div>
+    <div class="brand-marquee reveal">
+      <div class="brand-track">
+        <span class="b">Clive Christian</span><span class="dot"></span>
+        <span class="b">Amouage</span><span class="dot"></span>
+        <span class="b">Byredo</span><span class="dot"></span>
+        <span class="b">Louis Vuitton</span><span class="dot"></span>
+        <span class="b">Nishane</span><span class="dot"></span>
+        <span class="b">Penhaligon’s</span><span class="dot"></span>
+        <span class="b">Max Philip</span><span class="dot"></span>
+        <span class="b">Clive Christian</span><span class="dot"></span>
+        <span class="b">Amouage</span><span class="dot"></span>
+        <span class="b">Byredo</span><span class="dot"></span>
+        <span class="b">Louis Vuitton</span><span class="dot"></span>
+        <span class="b">Nishane</span><span class="dot"></span>
+        <span class="b">Penhaligon’s</span><span class="dot"></span>
+        <span class="b">Max Philip</span><span class="dot"></span>
+      </div>
+    </div>
+    <div class="container reveal">
+      <ul class="trust-line">
+        <li>Только оригинал</li>
+        <li>Свежий отлив под заказ</li>
+        <li>Объёмы 3 и 5 мл</li>
+        <li>Доставка по РФ</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- КАТАЛОГ -->
+  <section class="catalog" id="catalog">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Коллекция</span>
+        <h2 class="section-title">Каталог ароматов</h2>
+        <p class="section-sub">Выберите объём 3 или 5 мл и добавьте в корзину.</p>
+      </div>
+
+      <div class="filters reveal" id="filters" aria-label="Фильтр по бренду"></div>
+
+      <div class="grid" id="catalogGrid"></div>
+    </div>
+  </section>
+
+  <!-- ОПЛАТА И ДОСТАВКА -->
+  <section class="delivery" id="delivery">
+    <div class="container delivery-inner reveal">
+      <span class="eyebrow">Сервис</span>
+      <h2 class="section-title">Оплата и доставка</h2>
+      <ul class="delivery-list" id="deliveryList"></ul>
+      <p class="delivery-foot">Оформление заказа — заявкой через мессенджер, почту или звонок. Менеджер свяжется с вами, подтвердит наличие, сумму и способ доставки.</p>
+    </div>
+  </section>
+
+  <!-- ФУТЕР / КОНТАКТЫ / РЕКВИЗИТЫ -->
+  <footer class="site-footer" id="contacts">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <div class="wordmark-name footer-logo" data-shop-name>ATELIER</div>
+        <p class="footer-tagline" data-shop-tagline>Распив нишевой парфюмерии</p>
+        <p class="footer-muted">Продажа парфюмерной продукции в формате отливантов (распив).</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <p><a id="footPhone" href="#">+7 (000) 000-00-00</a></p>
+        <p><a id="footWhatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a></p>
+        <p><a id="footTelegram" href="#" target="_blank" rel="noopener">Telegram</a></p>
+        <p><a id="footEmail" href="#">mail@example.com</a></p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Документы</h4>
+        <p><a href="offer.html">Публичная оферта</a></p>
+        <p><a href="privacy.html">Политика конфиденциальности</a></p>
+      </div>
+
+      <div class="footer-col footer-legal" id="footerLegal">
+        <h4>Реквизиты</h4>
+        <!-- заполняется из config.js -->
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span id="footerCopy">© <span data-shop-name>ATELIER</span></span>
+    </div>
+  </footer>
+
+  <!-- ЗАТЕМНЕНИЕ -->
+  <div class="overlay" id="overlay" hidden></div>
+
+  <!-- КОРЗИНА (drawer) -->
+  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-label="Корзина">
+    <div class="cart-head">
+      <h3>Корзина</h3>
+      <button class="icon-btn" id="cartClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-empty" id="cartEmpty">Корзина пуста</div>
+    <div class="cart-foot">
+      <div class="cart-total-row">
+        <span>Итого</span>
+        <strong id="cartTotal">0 ₽</strong>
+      </div>
+      <p class="cart-hint" id="cartPriceHint" hidden>В заказе есть позиции с ценой «по запросу» — итог подтвердит менеджер.</p>
+      <button class="btn btn-primary btn-block" id="checkoutBtn" disabled>Оформить заказ</button>
+    </div>
+  </aside>
+
+  <!-- ОФОРМЛЕНИЕ ЗАКАЗА (modal) -->
+  <div class="modal" id="checkoutModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="checkoutTitle">Оформление заказа</h3>
+        <button class="icon-btn" id="checkoutClose" aria-label="Закрыть">✕</button>
+      </div>
+
+      <form id="checkoutForm" class="checkout-form" novalidate>
+        <label class="field">
+          <span>Имя <i>*</i></span>
+          <input type="text" name="name" required autocomplete="name" />
+        </label>
+        <label class="field">
+          <span>Телефон <i>*</i></span>
+          <input type="tel" name="phone" required autocomplete="tel" placeholder="+7 ___ ___-__-__" />
+        </label>
+        <label class="field">
+          <span>Город / адрес доставки</span>
+          <input type="text" name="address" autocomplete="street-address" />
+        </label>
+        <label class="field">
+          <span>Комментарий к заказу</span>
+          <textarea name="comment" rows="2"></textarea>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" name="agreePdn" required />
+          <span>Согласен(а) на обработку персональных данных согласно <a href="privacy.html" target="_blank" rel="noopener">политике конфиденциальности</a>.</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="agreeOffer" required />
+          <span>Ознакомлен(а) и согласен(а) с условиями <a href="offer.html" target="_blank" rel="noopener">публичной оферты</a>.</span>
+        </label>
+
+        <p class="form-error" id="formError" hidden></p>
+
+        <p class="send-label">Отправить заявку:</p>
+        <div class="send-buttons" id="sendButtons"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

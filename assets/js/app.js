@@ -1,0 +1,507 @@
+/* =====================================================================
+   ЛОГИКА САЙТА: каталог, корзина (localStorage), оформление заказа.
+   Данные берутся из config.js (CONFIG) и products.js (PRODUCTS).
+   ===================================================================== */
+(function () {
+  "use strict";
+
+  const CART_KEY = "atelier_cart_v1";
+  const cur = CONFIG.currency || "₽";
+
+  /* ---------- утилиты ---------- */
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+  function esc(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+  function fmtPrice(n) {
+    if (!n || n <= 0) return "по запросу";
+    return n.toLocaleString("ru-RU") + " " + cur;
+  }
+  function productById(id) {
+    return PRODUCTS.find((p) => p.id === id);
+  }
+  function priceFor(p, vol) {
+    return vol === 5 ? p.price5 : vol === 4 ? p.price4 : p.price3;
+  }
+
+  /* ---------- скидка ---------- */
+  const DISC = Math.max(0, Math.min(90, Number(CONFIG.discountPercent) || 0));
+  function hasDisc() { return DISC > 0; }
+  function applyDisc(n) { return Math.round((n * (100 - DISC)) / 100 / 10) * 10; } // округляем до 10 ₽
+  // цена, которую реально платит покупатель (со скидкой, если она включена)
+  function effPrice(p, vol) {
+    const b = priceFor(p, vol);
+    return b > 0 && hasDisc() ? applyDisc(b) : b;
+  }
+  // HTML цены: при скидке — старая зачёркнута + новая; иначе одна цена
+  function priceTag(n) {
+    if (!n || n <= 0) return `<span class="p-now">по запросу</span>`;
+    if (hasDisc()) return `<span class="p-old">${fmtPrice(n)}</span><span class="p-now">${fmtPrice(applyDisc(n))}</span>`;
+    return `<span class="p-now">${fmtPrice(n)}</span>`;
+  }
+
+  /* =================================================================
+     ПОДСТАНОВКА ДАННЫХ ИЗ CONFIG
+     ================================================================= */
+  function applyConfig() {
+    $$("[data-shop-name]").forEach((el) => (el.textContent = CONFIG.shopName));
+    $$("[data-shop-tagline]").forEach((el) => (el.textContent = CONFIG.shopTagline));
+    document.title = CONFIG.shopName + " — распив нишевой парфюмерии";
+
+    // контакты в футере
+    const phone = $("#footPhone");
+    if (phone) { phone.textContent = CONFIG.phoneDisplay; phone.href = "tel:+" + CONFIG.phoneRaw; }
+    const wa = $("#footWhatsapp");
+    if (wa) wa.href = "https://wa.me/" + CONFIG.phoneRaw;
+    const tg = $("#footTelegram");
+    if (tg) tg.href = "https://t.me/" + CONFIG.telegram;
+    const em = $("#footEmail");
+    if (em) { em.textContent = CONFIG.email; em.href = "mailto:" + CONFIG.email; }
+
+    // оплата/доставка
+    const dl = $("#deliveryList");
+    if (dl) dl.innerHTML = (CONFIG.delivery || []).map((t) => `<li>${esc(t)}</li>`).join("");
+
+    // реквизиты
+    const lg = CONFIG.legal || {};
+    const box = $("#footerLegal");
+    if (box) {
+      box.innerHTML =
+        "<h4>Реквизиты</h4>" +
+        `<p>${esc(lg.fio || "")}</p>` +
+        `<p>ИНН: ${esc(lg.inn || "")}</p>` +
+        `<p>ОГРНИП: ${esc(lg.ogrnip || "")}</p>` +
+        `<p>${esc(lg.address || "")}</p>`;
+    }
+    const copy = $("#footerCopy");
+    if (copy) copy.innerHTML = `© ${new Date().getFullYear()} ${esc(CONFIG.shopName)}. Все права защищены.`;
+
+    // плашка-объявление о скидке
+    const promo = $("#promoBar");
+    if (promo) {
+      if (hasDisc()) {
+        promo.innerHTML = `Сейчас действует скидка <b>−${DISC}%</b> на весь каталог`;
+        promo.hidden = false;
+      } else {
+        promo.hidden = true;
+      }
+    }
+  }
+
+  /* =================================================================
+     ФИЛЬТР ПО БРЕНДУ
+     ================================================================= */
+  let activeBrand = "Все";
+
+  function renderFilters() {
+    const brands = ["Все", ...Array.from(new Set(PRODUCTS.map((p) => p.brand)))];
+    const wrap = $("#filters");
+    wrap.innerHTML = brands
+      .map((b) => `<button class="filter-chip${b === activeBrand ? " active" : ""}" data-brand="${esc(b)}">${esc(b)}</button>`)
+      .join("");
+    $$(".filter-chip", wrap).forEach((chip) => {
+      chip.addEventListener("click", () => {
+        activeBrand = chip.dataset.brand;
+        renderFilters();
+        renderCatalog();
+        revealInit();
+      });
+    });
+  }
+
+  /* =================================================================
+     КАТАЛОГ
+     ================================================================= */
+  function renderCatalog() {
+    const grid = $("#catalogGrid");
+    const list = activeBrand === "Все" ? PRODUCTS : PRODUCTS.filter((p) => p.brand === activeBrand);
+
+    grid.innerHTML = list
+      .map((p) => {
+        const n = p.notes || {};
+        const notesHtml = `<div class="card-notes">
+              ${n.top ? `<div><b>Верх</b><span>${esc(n.top)}</span></div>` : ""}
+              ${n.heart ? `<div><b>Сердце</b><span>${esc(n.heart)}</span></div>` : ""}
+              ${n.base ? `<div><b>База</b><span>${esc(n.base)}</span></div>` : ""}
+            </div>`;
+        const info = (p.desc ? `<p class="card-desc">${esc(p.desc)}</p>` : "") + notesHtml;
+        return `
+        <article class="card reveal" data-id="${esc(p.id)}">
+          <div class="card-media">
+            <span class="card-badge">${esc(p.brand)}</span>
+            ${p.gender ? `<span class="card-gender-badge">${esc(p.gender)}</span>` : ""}
+            ${hasDisc() && p.price3 > 0 ? `<span class="card-sale">−${DISC}%</span>` : ""}
+            <img src="${esc(p.img)}" alt="${esc(p.brand)} ${esc(p.name)}" loading="lazy" />
+            <div class="card-hover">${info}</div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-name">${esc(p.name)}</h3>
+            <div class="card-mobile">${info}</div>
+            <div class="card-buy">
+              <div class="vol-toggle" role="group" aria-label="Объём">
+                <button class="vol-opt active" data-vol="3">
+                  <span class="v">3 мл</span><span class="p">${priceTag(p.price3)}</span>
+                </button>
+                <button class="vol-opt" data-vol="4">
+                  <span class="v">4 мл</span><span class="p">${priceTag(p.price4)}</span>
+                </button>
+                <button class="vol-opt" data-vol="5">
+                  <span class="v">5 мл</span><span class="p">${priceTag(p.price5)}</span>
+                </button>
+              </div>
+              <button class="btn btn-primary add-btn">В корзину</button>
+            </div>
+          </div>
+        </article>`;
+      })
+      .join("");
+
+    // обработчики на карточках
+    $$(".card", grid).forEach((card) => {
+      const id = card.dataset.id;
+      $$(".vol-opt", card).forEach((opt) => {
+        opt.addEventListener("click", () => {
+          $$(".vol-opt", card).forEach((o) => o.classList.remove("active"));
+          opt.classList.add("active");
+        });
+      });
+      $(".add-btn", card).addEventListener("click", () => {
+        const vol = Number($(".vol-opt.active", card).dataset.vol);
+        addToCart(id, vol);
+      });
+    });
+  }
+
+  /* =================================================================
+     КОРЗИНА
+     ================================================================= */
+  function loadCart() {
+    try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  }
+  let cart = loadCart();
+
+  function addToCart(id, vol) {
+    const key = id + "_" + vol;
+    const found = cart.find((i) => i.key === key);
+    if (found) found.qty += 1;
+    else cart.push({ key, id, vol, qty: 1 });
+    saveCart(cart);
+    updateCartUI();
+    toast("Добавлено в корзину");
+  }
+  function changeQty(key, delta) {
+    const it = cart.find((i) => i.key === key);
+    if (!it) return;
+    it.qty += delta;
+    if (it.qty <= 0) cart = cart.filter((i) => i.key !== key);
+    saveCart(cart);
+    updateCartUI();
+  }
+  function removeItem(key) {
+    cart = cart.filter((i) => i.key !== key);
+    saveCart(cart);
+    updateCartUI();
+  }
+
+  function cartTotals() {
+    let total = 0, unknown = 0, count = 0;
+    cart.forEach((i) => {
+      const p = productById(i.id);
+      if (!p) return;
+      count += i.qty;
+      const pr = effPrice(p, i.vol);
+      if (pr > 0) total += pr * i.qty;
+      else unknown += i.qty;
+    });
+    return { total, unknown, count };
+  }
+
+  function updateCartUI() {
+    const { total, unknown, count } = cartTotals();
+    const countEl = $("#cartCount");
+    countEl.textContent = count;
+    countEl.hidden = count === 0;
+
+    const itemsEl = $("#cartItems");
+    const emptyEl = $("#cartEmpty");
+    const checkoutBtn = $("#checkoutBtn");
+
+    if (cart.length === 0) {
+      itemsEl.innerHTML = "";
+      emptyEl.style.display = "flex";
+      checkoutBtn.disabled = true;
+    } else {
+      emptyEl.style.display = "none";
+      checkoutBtn.disabled = false;
+      itemsEl.innerHTML = cart
+        .map((i) => {
+          const p = productById(i.id);
+          if (!p) return "";
+          const pr = effPrice(p, i.vol);
+          const lineSum = pr > 0 ? fmtPrice(pr * i.qty) : "по запросу";
+          return `
+          <div class="cart-item">
+            <img src="${esc(p.img)}" alt="" loading="lazy" />
+            <div class="cart-item-info">
+              <div class="cart-item-brand">${esc(p.brand)}</div>
+              <div class="cart-item-name">${esc(p.name)}</div>
+              <div class="cart-item-vol">${i.vol} мл · ${fmtPrice(pr)}</div>
+              <div class="cart-item-bottom">
+                <div class="qty">
+                  <button data-act="dec" data-key="${esc(i.key)}" aria-label="Меньше">−</button>
+                  <span>${i.qty}</span>
+                  <button data-act="inc" data-key="${esc(i.key)}" aria-label="Больше">+</button>
+                </div>
+                <div class="cart-item-price">${lineSum}</div>
+              </div>
+              <button class="cart-item-remove" data-act="rm" data-key="${esc(i.key)}">убрать</button>
+            </div>
+          </div>`;
+        })
+        .join("");
+
+      $$("[data-act]", itemsEl).forEach((btn) => {
+        const key = btn.dataset.key;
+        btn.addEventListener("click", () => {
+          if (btn.dataset.act === "inc") changeQty(key, 1);
+          else if (btn.dataset.act === "dec") changeQty(key, -1);
+          else removeItem(key);
+        });
+      });
+    }
+
+    $("#cartTotal").textContent = fmtPrice(total) === "по запросу" && total === 0 ? "0 " + cur : fmtPrice(total);
+    $("#cartPriceHint").hidden = unknown === 0;
+  }
+
+  /* ---------- открытие/закрытие корзины ---------- */
+  const overlay = $("#overlay");
+  const drawer = $("#cartDrawer");
+
+  function openCart() {
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    overlay.hidden = false;
+  }
+  function closeCart() {
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    overlay.hidden = true;
+  }
+
+  /* =================================================================
+     ОФОРМЛЕНИЕ ЗАКАЗА
+     ================================================================= */
+  const modal = $("#checkoutModal");
+
+  function openCheckout() {
+    if (cart.length === 0) return;
+    buildSendButtons();
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+  }
+  function closeCheckout() {
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  function orderLines() {
+    const { total, unknown } = cartTotals();
+    const lines = cart.map((i, idx) => {
+      const p = productById(i.id);
+      const pr = effPrice(p, i.vol);
+      const sum = pr > 0 ? fmtPrice(pr * i.qty) : "по запросу";
+      return `${idx + 1}. ${p.brand} — ${p.name} · ${i.vol} мл × ${i.qty} — ${sum}`;
+    });
+    let totalStr = `Итого: ${fmtPrice(total)}`;
+    if (unknown > 0) totalStr += ` (+ ${unknown} поз. по запросу)`;
+    return { lines, totalStr };
+  }
+
+  function buildOrderText(data, opts) {
+    opts = opts || {};
+    const { lines, totalStr } = orderLines();
+    let txt = `Заказ с сайта «${CONFIG.shopName}»\n\n`;
+    if (!opts.callbackOnly) {
+      txt += lines.join("\n") + "\n\n" + totalStr + "\n";
+      if (hasDisc()) txt += `(цены с учётом скидки −${DISC}%)\n`;
+      txt += "\n";
+    }
+    txt += `Имя: ${data.name}\nТелефон: ${data.phone}`;
+    if (data.address) txt += `\nАдрес: ${data.address}`;
+    if (data.comment) txt += `\nКомментарий: ${data.comment}`;
+    if (opts.callbackOnly) txt += `\n\nПрошу перезвонить для оформления заказа.`;
+    return txt;
+  }
+
+  function readForm() {
+    const f = $("#checkoutForm");
+    const val = (n) => (f.querySelector('[name="' + n + '"]') || {}).value || "";
+    const chk = (n) => { const el = f.querySelector('[name="' + n + '"]'); return !!(el && el.checked); };
+    return {
+      name: val("name").trim(),
+      phone: val("phone").trim(),
+      address: val("address").trim(),
+      comment: val("comment").trim(),
+      agreePdn: chk("agreePdn"),
+      agreeOffer: chk("agreeOffer"),
+    };
+  }
+  function validate(data) {
+    const err = $("#formError");
+    if (!data.name) return showErr("Укажите имя.");
+    if (!data.phone || data.phone.replace(/\D/g, "").length < 5) return showErr("Укажите корректный телефон.");
+    if (!data.agreePdn) return showErr("Нужно согласие на обработку персональных данных.");
+    if (!data.agreeOffer) return showErr("Нужно согласие с условиями оферты.");
+    err.hidden = true;
+    return true;
+    function showErr(m) { err.textContent = m; err.hidden = false; return false; }
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    }
+    return fallbackCopy(text);
+  }
+  function fallbackCopy(text) {
+    return new Promise((resolve) => {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta); resolve();
+    });
+  }
+
+  function buildSendButtons() {
+    const wrap = $("#sendButtons");
+    const ch = CONFIG.channels || {};
+    const btns = [];
+    if (ch.whatsapp) btns.push(`<button type="button" class="btn send-wa" data-ch="whatsapp">WhatsApp</button>`);
+    if (ch.telegram) btns.push(`<button type="button" class="btn send-tg" data-ch="telegram">Telegram</button>`);
+    if (ch.email) btns.push(`<button type="button" class="btn send-email" data-ch="email">На почту</button>`);
+    if (ch.callback) btns.push(`<button type="button" class="btn send-call" data-ch="callback">Заказать звонок</button>`);
+    wrap.innerHTML = btns.join("");
+
+    $$("[data-ch]", wrap).forEach((b) => {
+      b.addEventListener("click", () => handleSend(b.dataset.ch));
+    });
+  }
+
+  function handleSend(channel) {
+    const data = readForm();
+    if (!validate(data)) return;
+
+    if (channel === "whatsapp") {
+      const text = buildOrderText(data);
+      window.open("https://wa.me/" + CONFIG.phoneRaw + "?text=" + encodeURIComponent(text), "_blank");
+      afterSend();
+    } else if (channel === "telegram") {
+      const text = buildOrderText(data);
+      copyToClipboard(text).then(() => {
+        window.open("https://t.me/" + CONFIG.telegram, "_blank");
+        toast("Текст заказа скопирован — вставьте его в чат Telegram");
+        afterSend();
+      });
+    } else if (channel === "email") {
+      sendEmail(data, false);
+    } else if (channel === "callback") {
+      sendEmail(data, true);
+    }
+  }
+
+  function sendEmail(data, callbackOnly) {
+    const text = buildOrderText(data, { callbackOnly });
+    const subject = (callbackOnly ? "Заказ звонка — " : "Заказ с сайта — ") + CONFIG.shopName;
+
+    if (CONFIG.formspreeEndpoint) {
+      fetch(CONFIG.formspreeEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ subject, name: data.name, phone: data.phone, address: data.address, comment: data.comment, order: text }),
+      })
+        .then((r) => {
+          if (r.ok) { toast("Заявка отправлена! Мы свяжемся с вами."); afterSend(true); }
+          else mailtoFallback(subject, text);
+        })
+        .catch(() => mailtoFallback(subject, text));
+    } else {
+      mailtoFallback(subject, text);
+    }
+  }
+  function mailtoFallback(subject, text) {
+    window.location.href = "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(text);
+    afterSend();
+  }
+
+  function afterSend(clear) {
+    if (clear) { cart = []; saveCart(cart); updateCartUI(); }
+    closeCheckout();
+    closeCart();
+  }
+
+  /* =================================================================
+     ТОСТ
+     ================================================================= */
+  let toastTimer;
+  function toast(msg) {
+    let el = $(".toast");
+    if (!el) { el = document.createElement("div"); el.className = "toast"; document.body.appendChild(el); }
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+  }
+
+  /* =================================================================
+     АНИМАЦИИ ПОЯВЛЕНИЯ
+     ================================================================= */
+  let observer;
+  function revealInit() {
+    if (!("IntersectionObserver" in window)) {
+      $$(".reveal").forEach((el) => el.classList.add("in"));
+      return;
+    }
+    if (!observer) {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) { e.target.classList.add("in"); observer.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+    }
+    $$(".reveal:not(.in)").forEach((el) => observer.observe(el));
+  }
+
+  /* =================================================================
+     ИНИЦИАЛИЗАЦИЯ
+     ================================================================= */
+  function init() {
+    applyConfig();
+    renderFilters();
+    renderCatalog();
+    updateCartUI();
+    revealInit();
+
+    $("#cartBtn").addEventListener("click", openCart);
+    $("#cartClose").addEventListener("click", closeCart);
+    $("#checkoutBtn").addEventListener("click", () => { closeCart(); openCheckout(); });
+    $("#checkoutClose").addEventListener("click", closeCheckout);
+    overlay.addEventListener("click", closeCart);
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeCheckout(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { closeCart(); closeCheckout(); }
+    });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
