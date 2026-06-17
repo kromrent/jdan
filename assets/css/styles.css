@@ -665,6 +665,17 @@ button{font-family:inherit;cursor:pointer}
   .hero-promo-text{white-space:normal}
 }
 
+/* ===== ПРОИЗВОДИТЕЛЬНОСТЬ НА ТЕЛЕФОНАХ: убираем дорогие при скролле эффекты ===== */
+@media (max-width:900px){
+  /* плёночное зерно (fixed + mix-blend) перерисовывает весь экран на каждый кадр */
+  body::after{display:none}
+  /* убираем backdrop-blur (шапка + 46 бейджей на карточках) — главный источник лагов */
+  .site-header{background:rgba(243,241,236,.95);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .card-vol-badge,.card-sale{backdrop-filter:none;-webkit-backdrop-filter:none}
+  /* blob: убираем дорогой морфинг border-radius, оставляем лёгкое плавание (GPU) */
+  .hero-blob{animation:floaty 12s ease-in-out infinite}
+}
+
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto !important}
   .reveal{opacity:1;transform:none;transition:none}

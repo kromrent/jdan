@@ -194,7 +194,7 @@
           <div class="card-media">
             ${hasDisc() && p.price3 > 0 ? `<span class="card-sale">−${DISC}%</span>` : ""}
             <span class="card-vol-badge">3 мл</span>
-            <img src="${esc(p.img)}" alt="${esc(p.brand)} ${esc(p.name)}" loading="lazy" />
+            <img src="${esc(p.img)}" alt="${esc(p.brand)} ${esc(p.name)}" loading="lazy" decoding="async" />
           </div>
           <div class="card-body">
             <div class="card-meta">
