@@ -650,11 +650,15 @@ button{font-family:inherit;cursor:pointer}
   .footer-grid{grid-template-columns:1fr;gap:30px}
   .send-buttons{grid-template-columns:1fr}
   .section-head{margin-bottom:32px}
-  /* облегчаем верх на телефоне: «шарик» меньше и деликатнее, меньше пустоты снизу hero */
-  .hero{padding-bottom:clamp(16px,5vw,34px)}
+  /* облегчаем верх на телефоне: меньше воздуха, «шарик» бледнее, без дубля скидки */
+  .hero{padding:clamp(22px,6vw,46px) 0 clamp(14px,4vw,26px)}
+  .hero-eyebrow{margin-bottom:15px}
+  .hero-title{margin-bottom:14px}
+  .hero-lead{margin-bottom:18px}
   .hero-divider{display:none}                 /* декоративная чёрточка на телефоне не нужна */
-  .catalog{padding-top:clamp(28px,7vw,50px)}
-  .hero-blob{width:min(38vw,240px);opacity:.4;top:clamp(80px,12vh,150px)}
+  .hero-promo{display:none}                    /* скидка уже есть в верхней плашке — не дублируем */
+  .catalog{padding-top:clamp(26px,6vw,46px)}
+  .hero-blob{width:min(40vw,220px);opacity:.3;top:clamp(58px,10vh,118px)}
   /* на телефоне кнопки hero убираем — каталог сразу под ними (листать вниз) */
   .hero-actions{display:none}
   /* фильтры: одна прокручиваемая по горизонтали строка вместо 3–4 рядов */
