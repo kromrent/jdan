@@ -43,6 +43,19 @@
     if (hasDisc()) return `<span class="p-old">${fmtPrice(n)}</span><span class="p-now">${fmtPrice(applyDisc(n))}</span>`;
     return `<span class="p-now">${fmtPrice(n)}</span>`;
   }
+  // крупный блок цены под пилюлями (метка объёма + сумма) — обновляется при смене объёма
+  function priceBlock(p, vol) {
+    return `<span class="cp-vol">${vol} мл</span><span class="cp-amount">${priceTag(priceFor(p, vol))}</span>`;
+  }
+  // ноты одной строкой: до 4 нот через «·» (верх → сердце → база)
+  function inlineNotes(p) {
+    const n = p.notes || {};
+    const parts = [n.top, n.heart, n.base].filter(Boolean).join(",")
+      .split(",").map((s) => s.trim()).filter(Boolean);
+    if (!parts.length) return "";
+    const line = parts.slice(0, 4).join(" · ");
+    return line.charAt(0).toUpperCase() + line.slice(1);
+  }
 
   /* =================================================================
      ПОДСТАНОВКА ДАННЫХ ИЗ CONFIG
@@ -90,6 +103,18 @@
         promo.hidden = true;
       }
     }
+
+    // бейдж скидки в hero (показывается только при включённой скидке)
+    const heroPromo = $("#heroPromo");
+    if (heroPromo) {
+      if (hasDisc()) {
+        const pct = $("#heroPromoPct");
+        if (pct) pct.textContent = "−" + DISC + "%";
+        heroPromo.hidden = false;
+      } else {
+        heroPromo.hidden = true;
+      }
+    }
   }
 
   /* =================================================================
@@ -122,38 +147,31 @@
 
     grid.innerHTML = list
       .map((p) => {
-        const n = p.notes || {};
-        const notesHtml = `<div class="card-notes">
-              ${n.top ? `<div><b>Верх</b><span>${esc(n.top)}</span></div>` : ""}
-              ${n.heart ? `<div><b>Сердце</b><span>${esc(n.heart)}</span></div>` : ""}
-              ${n.base ? `<div><b>База</b><span>${esc(n.base)}</span></div>` : ""}
-            </div>`;
-        const info = (p.desc ? `<p class="card-desc">${esc(p.desc)}</p>` : "") + notesHtml;
+        const notes = inlineNotes(p);
         return `
         <article class="card reveal" data-id="${esc(p.id)}">
           <div class="card-media">
-            <span class="card-badge">${esc(p.brand)}</span>
-            ${p.gender ? `<span class="card-gender-badge">${esc(p.gender)}</span>` : ""}
             ${hasDisc() && p.price3 > 0 ? `<span class="card-sale">−${DISC}%</span>` : ""}
+            <span class="card-vol-badge">3 мл</span>
             <img src="${esc(p.img)}" alt="${esc(p.brand)} ${esc(p.name)}" loading="lazy" />
-            <div class="card-hover">${info}</div>
           </div>
           <div class="card-body">
+            <div class="card-meta">
+              <span class="card-brand">${esc(p.brand)}</span>
+              ${p.gender ? `<span class="card-gender">${esc(p.gender)}</span>` : ""}
+            </div>
             <h3 class="card-name">${esc(p.name)}</h3>
-            <div class="card-mobile">${info}</div>
+            ${notes ? `<p class="card-notes-line">${esc(notes)}</p>` : ""}
             <div class="card-buy">
               <div class="vol-toggle" role="group" aria-label="Объём">
-                <button class="vol-opt active" data-vol="3">
-                  <span class="v">3 мл</span><span class="p">${priceTag(p.price3)}</span>
-                </button>
-                <button class="vol-opt" data-vol="4">
-                  <span class="v">4 мл</span><span class="p">${priceTag(p.price4)}</span>
-                </button>
-                <button class="vol-opt" data-vol="5">
-                  <span class="v">5 мл</span><span class="p">${priceTag(p.price5)}</span>
-                </button>
+                <button class="vol-opt active" data-vol="3"><span class="v">3 мл</span></button>
+                <button class="vol-opt" data-vol="4"><span class="v">4 мл</span></button>
+                <button class="vol-opt" data-vol="5"><span class="v">5 мл</span></button>
               </div>
-              <button class="btn btn-primary add-btn">В корзину</button>
+              <div class="card-price-row">
+                <div class="card-price">${priceBlock(p, 3)}</div>
+                <button class="btn add-btn" aria-label="Добавить в корзину"><span class="plus" aria-hidden="true">+</span><span class="add-txt">В корзину</span></button>
+              </div>
             </div>
           </div>
         </article>`;
@@ -163,10 +181,16 @@
     // обработчики на карточках
     $$(".card", grid).forEach((card) => {
       const id = card.dataset.id;
+      const p = productById(id);
       $$(".vol-opt", card).forEach((opt) => {
         opt.addEventListener("click", () => {
           $$(".vol-opt", card).forEach((o) => o.classList.remove("active"));
           opt.classList.add("active");
+          const vol = Number(opt.dataset.vol);
+          const priceEl = $(".card-price", card);
+          if (priceEl && p) priceEl.innerHTML = priceBlock(p, vol);
+          const volBadge = $(".card-vol-badge", card);
+          if (volBadge) volBadge.textContent = vol + " мл";
         });
       });
       $(".add-btn", card).addEventListener("click", () => {

@@ -16,6 +16,11 @@
   --gold-deep:#a8854a;
   --gold-soft:#d8c39a;
   --gold-tint:#f4eddd;
+  /* винный/бордо акцент — цена, активный объём, ховеры (золото → только тонкие линии) */
+  --wine:#7a2230;        /* основной акцент: цена, активный объём */
+  --wine-deep:#5e1924;   /* темнее: ховер/нажатие */
+  --wine-soft:#b06a72;   /* осветлённый для второстепенного */
+  --wine-tint:#f4e6e4;   /* очень светлый вош: фокус-кольца, лёгкий фон активного */
   /* тёплый «эспрессо» для кнопок — мягче чистого чёрного на персиковой теме */
   --btn:#2c2118;
   --btn-deep:#1f1610;
@@ -180,6 +185,68 @@ button{font-family:inherit;cursor:pointer}
   background:linear-gradient(var(--gold-soft),transparent);
 }
 
+/* ----- hero: плашка-пилюля «скидка −N%» (показ/скрытие из JS через [hidden]) ----- */
+.hero-promo[hidden]{display:none !important}      /* атрибут hidden всегда побеждает */
+.hero-promo{
+  position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;gap:10px;       /* центрируется внутри hero text-align:center */
+  margin-top:clamp(22px,3vw,32px);
+  padding:10px 20px;border-radius:999px;
+  font-size:13px;letter-spacing:.04em;color:var(--ink-soft);
+  /* тёплая «стеклянная» поверхность */
+  background:linear-gradient(180deg,rgba(253,245,236,.78),rgba(244,237,221,.62));
+  -webkit-backdrop-filter:blur(7px) saturate(1.05);backdrop-filter:blur(7px) saturate(1.05);
+  border:1px solid var(--gold-soft);
+  box-shadow:0 14px 30px -22px rgba(122,34,48,.30), inset 0 1px 0 rgba(255,255,255,.55);
+  animation:promoBreath 6s var(--ease) infinite;        /* еле заметное «дыхание» тени/рамки */
+}
+/* медленный золотой блик, проходящий по плашке */
+.hero-promo::before{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0;
+  background:linear-gradient(105deg,transparent 38%,rgba(216,195,154,.55) 50%,transparent 62%);
+  background-size:230% 100%;background-position:130% 0;
+  animation:promoShimmer 4.6s var(--ease) infinite;
+}
+.hero-promo-text,.hero-promo-spark{position:relative;z-index:1}
+.hero-promo-text{white-space:nowrap}
+/* акцент-процент: бордо + сериф, «читается как выгода» без кричащей заливки */
+.hero-promo-text b{
+  font-family:var(--serif);font-weight:600;font-style:italic;
+  font-size:1.28em;line-height:1;color:var(--wine);letter-spacing:0;
+  margin:0 .14em;
+}
+/* декоративная искра слева: золотая точка с мягким свечением + крестик-блик */
+.hero-promo-spark{
+  flex:none;width:8px;height:8px;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,#f3e6c4 0%,var(--gold) 55%,var(--gold-deep) 100%);
+  box-shadow:0 0 0 1px rgba(168,133,74,.25), 0 0 10px 2px rgba(185,151,91,.55);
+  animation:promoSpark 2.8s ease-in-out infinite;
+}
+.hero-promo-spark::before{
+  content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;
+  transform:translate(-50%,-50%);
+  background:
+    linear-gradient(rgba(216,195,154,.85),rgba(216,195,154,.85)) center/1px 100% no-repeat,
+    linear-gradient(rgba(216,195,154,.85),rgba(216,195,154,.85)) center/100% 1px no-repeat;
+  opacity:.7;animation:promoSparkRays 2.8s ease-in-out infinite;
+}
+@keyframes promoShimmer{
+  0%,18%{background-position:130% 0}
+  100%{background-position:-130% 0}
+}
+@keyframes promoBreath{
+  0%,100%{box-shadow:0 14px 30px -22px rgba(122,34,48,.30), inset 0 1px 0 rgba(255,255,255,.55);border-color:var(--gold-soft)}
+  50%{box-shadow:0 16px 34px -20px rgba(122,34,48,.42), inset 0 1px 0 rgba(255,255,255,.55);border-color:var(--gold)}
+}
+@keyframes promoSpark{
+  0%,100%{transform:scale(.92);box-shadow:0 0 0 1px rgba(168,133,74,.25), 0 0 7px 1px rgba(185,151,91,.45)}
+  50%{transform:scale(1.08);box-shadow:0 0 0 1px rgba(168,133,74,.30), 0 0 13px 3px rgba(185,151,91,.70)}
+}
+@keyframes promoSparkRays{
+  0%,100%{opacity:.45;transform:translate(-50%,-50%) rotate(0) scale(.85)}
+  50%{opacity:.85;transform:translate(-50%,-50%) rotate(45deg) scale(1)}
+}
+
 /* ============================= БРЕНДЫ + ДОВЕРИЕ (гибрид) ============================= */
 .brands{padding:18px 0 8px;text-align:center}
 .brands-eyebrow{margin-bottom:26px}
@@ -224,143 +291,129 @@ button{font-family:inherit;cursor:pointer}
 .filter-chip:hover{border-color:var(--gold-soft);color:var(--ink);transform:translateY(-1px)}
 .filter-chip.active{background:var(--btn);color:#fbf3e9;border-color:var(--btn);box-shadow:0 10px 20px -14px rgba(44,33,24,.7)}
 
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px}
 
+/* карточка: фото «утоплено» с отступом и скруглением, всё содержимое единообразно с полями */
 .card{
   position:relative;
   background:linear-gradient(180deg,#fffaf2 0%,#fbefe2 100%);
-  border:1px solid rgba(217,195,154,.35);border-radius:var(--radius);
-  overflow:hidden;display:flex;flex-direction:column;
-  box-shadow:var(--shadow-card);
+  border:1px solid rgba(217,195,154,.4);border-radius:20px;
+  padding:14px 14px 18px;
+  display:flex;flex-direction:column;
+  /* мягкая тёплая глубина «дорогой» карточки */
+  box-shadow:0 1px 2px rgba(40,32,18,.05), 0 16px 36px -24px rgba(70,40,30,.34);
   transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
 }
-.card:hover{transform:translateY(-6px);box-shadow:var(--shadow);border-color:var(--gold-soft)}
+.card:hover{
+  transform:translateY(-7px);
+  box-shadow:0 4px 10px rgba(40,32,18,.06), 0 32px 58px -26px rgba(80,35,40,.42);
+  border-color:var(--wine-soft);
+}
 .card-media{
   position:relative;aspect-ratio:1/1;
-  background:var(--media-bg);overflow:hidden;
+  border-radius:14px;overflow:hidden;
+  background:var(--media-bg);
 }
 .card-media::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  box-shadow:inset 0 -40px 50px -40px rgba(40,32,18,.12);
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(40,32,18,.05), inset 0 -34px 46px -40px rgba(40,32,18,.12);
 }
 .card-media img{
   width:100%;height:100%;object-fit:cover;object-position:center 42%;
   /* тёплый тон, чтобы серая штукатурка кадров подружилась с персиковой темой */
   filter:sepia(.14) saturate(1.12) brightness(1.015);
-  transition:transform .7s var(--ease), filter .4s var(--ease);
+  transition:transform .7s var(--ease);
 }
 .card:hover .card-media img{transform:scale(1.045)}
-/* бейдж бренда поверх фото */
-.card-badge{
-  position:absolute;top:12px;left:12px;z-index:2;
-  background:rgba(255,255,255,.86);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  border:1px solid rgba(228,222,212,.9);
-  border-radius:999px;padding:5px 12px;
-  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--gold-deep);
-}
-.card-gender-badge{
+/* бейдж выбранного объёма поверх фото (обновляется при смене объёма) */
+.card-vol-badge{
   position:absolute;top:12px;right:12px;z-index:2;
-  background:rgba(26,22,16,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  border-radius:999px;padding:5px 11px;
-  font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:#fff;
+  background:rgba(253,245,236,.88);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  border:1px solid rgba(217,195,154,.55);
+  border-radius:999px;padding:5px 13px;
+  font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink-soft);
 }
+/* маленький деликатный значок скидки */
 .card-sale{
-  position:absolute;left:12px;bottom:12px;z-index:2;
-  background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#fff;
-  border-radius:999px;padding:5px 11px;
-  font-size:10.5px;font-weight:700;letter-spacing:.04em;
-  box-shadow:0 8px 18px -8px rgba(168,133,74,.95);
-  transition:opacity .3s var(--ease);
+  position:absolute;left:12px;top:12px;z-index:2;
+  background:rgba(253,245,236,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(122,34,48,.32);color:var(--wine-deep);
+  border-radius:999px;padding:3px 9px;
+  font-size:9.5px;font-weight:700;letter-spacing:.03em;
 }
-.card-body{padding:15px 16px 16px;display:flex;flex-direction:column;flex:1}
-.card-name{font-family:var(--serif);font-size:20px;font-weight:600;line-height:1.14;margin:0 0 12px;letter-spacing:.005em}
-.card-desc{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.55}
-.card-notes{
-  font-size:12px;color:var(--muted);
-  border-top:1px solid var(--line-soft);padding-top:14px;margin-bottom:18px;
-  display:grid;gap:5px;
-}
-.card-notes b{
-  color:var(--ink-soft);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;
-  display:inline-block;min-width:50px;
-}
-.card-notes div{display:flex;gap:8px;line-height:1.45}
-.card-notes div + div{margin-top:0}
 
-/* оверлей с описанием/нотами поверх фото — раскрывается при наведении (десктоп) */
-.card-hover{
-  position:absolute;inset:0;z-index:1;
-  display:flex;flex-direction:column;justify-content:flex-end;
-  padding:22px 20px;
-  color:#f1e7d8;
-  background:linear-gradient(to top,rgba(22,17,11,.95) 0%,rgba(22,17,11,.78) 42%,rgba(22,17,11,.25) 78%,transparent 100%);
-  opacity:0;transform:translateY(10px);
-  transition:opacity .45s var(--ease), transform .45s var(--ease);
+.card-body{padding:16px 4px 0;display:flex;flex-direction:column;flex:1}
+/* мета-строка: бренд (приглушённо) + лёгкая плашка пола */
+.card-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.card-brand{font-size:10px;letter-spacing:.17em;text-transform:uppercase;font-weight:700;color:var(--muted-2)}
+.card-gender{
+  flex:none;
+  font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--wine);
+  border:1px solid rgba(176,106,114,.4);background:rgba(253,245,236,.6);
+  border-radius:999px;padding:3px 9px;
 }
-.card-hover .card-desc{color:#efe6d6;margin:0 0 12px;font-size:13.5px}
-.card-hover .card-notes{border-top-color:rgba(255,255,255,.2);color:#e7dcc8;margin-bottom:0}
-.card-hover .card-notes b{color:var(--gold-soft)}
-/* мобильный/статичный блок инфо в теле карточки */
-.card-mobile .card-desc{margin:0 0 12px}
-.card-mobile .card-notes{margin-bottom:16px}
-
-@media (hover:hover){
-  .card:hover .card-hover{opacity:1;transform:none}
-  .card:hover .card-sale{opacity:0}
-  .card-mobile{display:none}
+.card-name{
+  font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.1;
+  margin:0 0 9px;letter-spacing:.004em;color:var(--ink);
 }
-@media (hover:none){
-  .card-hover{display:none}
+/* ноты одной деликатной строкой (до 2 строк) */
+.card-notes-line{
+  font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 18px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 
 .card-buy{margin-top:auto}
-.vol-toggle{display:flex;gap:8px;margin-bottom:10px}
+/* пилюли объёма — компактные, без цен внутри, активная — тёмная заливка-эспрессо */
+.vol-toggle{display:flex;gap:6px;margin-bottom:14px}
 .vol-opt{
-  position:relative;flex:1;overflow:hidden;
-  border:1px solid var(--line);border-radius:12px;
+  flex:1;
+  border:1px solid var(--line);border-radius:999px;
   background:linear-gradient(170deg,#fffdfa 0%,#f8efe2 100%);
-  padding:8px 6px 9px;text-align:center;
-  box-shadow:0 1px 2px rgba(40,32,18,.05), inset 0 1px 0 rgba(255,255,255,.7);
-  transition:border-color .22s var(--ease), background .22s var(--ease), box-shadow .22s var(--ease), transform .22s var(--ease);
+  padding:6px 5px;text-align:center;
+  box-shadow:0 1px 2px rgba(40,32,18,.04);
+  transition:border-color .22s var(--ease), background .22s var(--ease), color .22s var(--ease), box-shadow .22s var(--ease), transform .22s var(--ease);
 }
+.vol-opt .v{font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--ink-soft);transition:color .22s var(--ease)}
 .vol-opt:hover{
-  border-color:var(--gold-soft);
-  background:linear-gradient(170deg,#fffaf1 0%,#f3e7d3 100%);
+  border-color:var(--wine-soft);
+  background:linear-gradient(170deg,#fffafa 0%,#f7eae8 100%);
   transform:translateY(-1px);
 }
 .vol-opt.active{
-  border-color:var(--gold);
-  background:linear-gradient(168deg,#fffdf8 0%,#f6e9d2 100%);
-  box-shadow:0 8px 18px -12px rgba(168,133,74,.65), inset 0 0 0 1px rgba(185,151,91,.5), inset 0 1px 0 rgba(255,255,255,.85);
+  background:var(--btn);border-color:var(--btn);
+  box-shadow:0 10px 20px -12px rgba(44,33,24,.7);
 }
-/* тонкая золотая верхняя полоска у активного блока */
-.vol-opt.active::before{
-  content:"";position:absolute;left:0;right:0;top:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--gold),var(--gold-soft),var(--gold),transparent);
+.vol-opt.active .v{color:#fbf3e9}
+
+/* строка цены: крупная винная цена слева + компактная кнопка справа */
+.card-price-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-price{display:flex;flex-direction:column;gap:3px;line-height:1.05;min-width:0}
+.cp-vol{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted-2);font-weight:600}
+.cp-amount{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.p-old{text-decoration:line-through;text-decoration-color:rgba(141,135,125,.5);color:var(--muted-2);font-size:12px;opacity:.7;order:2}
+.p-now{font-family:var(--serif);color:var(--wine);font-weight:600;font-size:24px;letter-spacing:.005em;line-height:1}
+/* кнопка: по умолчанию «в цвет карточки» (прозрачная с обводкой),
+   на ховере «+» проворачивается и кнопка заливается тёмным снизу вверх */
+.add-btn{
+  overflow:hidden;
+  flex:none;width:auto;padding:8px 15px;border-radius:999px;gap:5px;
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  background:transparent;color:var(--btn);border:1px solid var(--line);
+  box-shadow:0 4px 12px -10px rgba(44,33,24,.5);
+  transition:color .3s var(--ease) .06s, border-color .35s var(--ease);
 }
-.vol-opt .v{display:block;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft)}
-.vol-opt.active .v{color:var(--ink)}
-.vol-opt .p{
-  display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:5px;
-  font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.1;
+.add-btn::before{
+  content:"";position:absolute;inset:0;z-index:0;
+  background:var(--btn);
+  transform:scaleY(0);transform-origin:bottom center;
+  transition:transform .42s var(--ease);
 }
-.p-old{text-decoration:line-through;text-decoration-color:rgba(141,135,125,.6);color:var(--muted-2);font-size:10.5px;opacity:.8}
-.p-now{
-  color:var(--gold-deep);font-weight:700;font-size:12.5px;letter-spacing:.01em;
-}
-/* лёгкий золотой переливающийся блик на цене активного блока */
-.vol-opt.active .p-now{
-  background:linear-gradient(100deg,var(--gold-deep) 20%,#e7c889 48%,var(--gold-deep) 76%);
-  background-size:220% 100%;
-  -webkit-background-clip:text;background-clip:text;
-  -webkit-text-fill-color:transparent;color:transparent;
-  animation:priceShimmer 3.6s var(--ease) infinite;
-}
-@keyframes priceShimmer{
-  0%,100%{background-position:140% 0}
-  50%{background-position:-40% 0}
-}
-.add-btn{width:100%;padding:12px 24px}
+.add-btn .plus,.add-btn .add-txt{position:relative;z-index:1}
+.add-btn .plus{font-size:14px;font-weight:600;line-height:0;margin-top:-1px;transition:transform .42s var(--ease)}
+.add-btn:hover{color:#fbf3e9;border-color:var(--btn)}
+.add-btn:hover::before{transform:scaleY(1)}
+.add-btn:hover .plus{transform:rotate(90deg)}
+.add-btn:active{transform:translateY(1px)}
 
 /* ============================= ОПЛАТА/ДОСТАВКА ============================= */
 .delivery{position:relative;padding:clamp(56px,7vw,92px) 0;background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -490,9 +543,11 @@ button{font-family:inherit;cursor:pointer}
 @media (max-width:760px){
   .nav{display:none}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .card{padding:12px 12px 16px}
   .card-name{font-size:19px}
-  .card-body{padding:16px 16px 18px}
-  .card-notes,.card-desc{font-size:12px}
+  .card-notes-line{font-size:11.5px;margin-bottom:16px}
+  .card-price-row{flex-direction:column;align-items:stretch;gap:11px}
+  .add-btn{width:100%;justify-content:center}
   .footer-grid{grid-template-columns:1fr;gap:30px}
   .send-buttons{grid-template-columns:1fr}
   .section-head{margin-bottom:32px}
@@ -500,10 +555,16 @@ button{font-family:inherit;cursor:pointer}
 @media (max-width:420px){
   .container{padding:0 16px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  .card-body{padding:14px}
+  .card{padding:10px 10px 14px}
+  .card-body{padding:13px 2px 0}
   .card-name{font-size:17px}
-  .card-notes b{min-width:auto}
-  .vol-toggle{flex-direction:column}
+  .vol-toggle{gap:5px}
+  .vol-opt{padding:6px 3px}
+  .vol-opt .v{font-size:10.5px}
+  .p-now{font-size:21px}
+  /* плашка-скидка: не вылезать за края, разрешить перенос */
+  .hero-promo{padding:8px 14px;font-size:11.5px;gap:8px;max-width:100%;white-space:normal}
+  .hero-promo-text{white-space:normal}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -511,15 +572,11 @@ button{font-family:inherit;cursor:pointer}
   .reveal{opacity:1;transform:none;transition:none}
   .reveal[class*="nth"]{transition-delay:0 !important}
   .grid .reveal{transition-delay:0 !important}
-  .card,.card-media img,.btn,.filter-chip,.nav a::after,.vol-opt{transition:none}
-  .vol-opt.active .p-now{
-    animation:none;
-    -webkit-text-fill-color:var(--gold-deep);color:var(--gold-deep);
-    background:none;
-  }
+  .card,.card-media img,.btn,.filter-chip,.nav a::after,.vol-opt,.vol-opt .v,.add-btn,.add-btn::before,.add-btn .plus{transition:none}
   .modal-box{animation:none}
   .brand-track{animation:none;justify-content:center;white-space:normal;flex-wrap:wrap}
   .hero::before,.hero::after{animation:none}
+  .hero-promo,.hero-promo::before,.hero-promo-spark,.hero-promo-spark::before{animation:none}
 }
 
 /* ============================= ЮР-СТРАНИЦЫ ============================= */
