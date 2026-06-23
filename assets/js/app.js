@@ -126,6 +126,8 @@
      ================================================================= */
   let activeBrand = "Все";
   let activeGender = "Все";
+  let searchQuery = "";
+  let sortMode = "default";
 
   // пер-карточный цвет: [свечение на ховере, цвет бренд-лейбла] — свой у каждого аромата (палитра SILLAGE)
   const GLOW = {
@@ -183,12 +185,32 @@
   /* =================================================================
      КАТАЛОГ
      ================================================================= */
+  // строка для поиска: бренд + название + все ноты
+  function searchHaystack(p) {
+    const n = p.notes || {};
+    return [p.brand, p.name, n.top, n.heart, n.base].filter(Boolean).join(" ").toLowerCase();
+  }
+
   function renderCatalog() {
     const grid = $("#catalogGrid");
-    const list = PRODUCTS.filter(
+    const q = searchQuery.trim().toLowerCase();
+    let list = PRODUCTS.filter(
       (p) => (activeBrand === "Все" || p.brand === activeBrand) &&
-             (activeGender === "Все" || p.gender === activeGender)
+             (activeGender === "Все" || p.gender === activeGender) &&
+             (!q || searchHaystack(p).indexOf(q) !== -1)
     );
+
+    // сортировка (по цене за 3 мл со скидкой; «по запросу» = 0 уходит в конец)
+    if (sortMode === "price-asc" || sortMode === "price-desc") {
+      const priceKey = (p) => { const v = effPrice(p, 3); return v > 0 ? v : Infinity; };
+      list = list.slice().sort((a, b) =>
+        sortMode === "price-asc" ? priceKey(a) - priceKey(b) : priceKey(b) - priceKey(a));
+    } else if (sortMode === "name") {
+      list = list.slice().sort((a, b) => a.name.localeCompare(b.name, "ru"));
+    }
+
+    const emptyEl = $("#catalogEmpty");
+    if (emptyEl) emptyEl.hidden = list.length > 0;
 
     grid.innerHTML = list
       .map((p) => {
@@ -242,7 +264,75 @@
         const vol = Number($(".vol-opt.active", card).dataset.vol);
         addToCart(id, vol);
       });
+      const openP = () => openProduct(id);
+      const media = $(".card-media", card);
+      const nameEl = $(".card-name", card);
+      if (media) media.addEventListener("click", openP);
+      if (nameEl) nameEl.addEventListener("click", openP);
     });
+  }
+
+  /* =================================================================
+     МОДАЛКА ТОВАРА
+     ================================================================= */
+  const productModal = $("#productModal");
+
+  function notesRows(p) {
+    const n = p.notes || {};
+    const row = (label, val) => val ? `<div class="pm-note-row"><b>${label}</b><span>${esc(val)}</span></div>` : "";
+    const rows = row("Верх", n.top) + row("Сердце", n.heart) + row("База", n.base);
+    return rows ? `<div class="pm-notes">${rows}</div>` : "";
+  }
+
+  function openProduct(id) {
+    const p = productById(id);
+    if (!p || !productModal) return;
+    const body = $("#productBody");
+    body.innerHTML =
+      `<div class="pm-media">
+        ${hasDisc() && p.price3 > 0 ? `<span class="card-sale">−${DISC}%</span>` : ""}
+        <img src="${esc(p.img)}" alt="${esc(p.brand)} ${esc(p.name)}" loading="lazy" decoding="async" />
+      </div>
+      <div class="pm-info">
+        <span class="pm-brand">${esc(p.brand)}</span>
+        <h3 class="pm-name" id="pmName">${esc(p.name)}</h3>
+        ${p.gender ? `<div class="pm-gender">${esc(p.gender)}</div>` : ""}
+        ${p.desc ? `<p class="pm-desc">${esc(p.desc)}</p>` : ""}
+        ${notesRows(p)}
+        <div class="pm-buy">
+          <div class="vol-toggle" role="group" aria-label="Объём">
+            <button class="vol-opt active" data-vol="3"><span class="v">3 мл</span></button>
+            <button class="vol-opt" data-vol="4"><span class="v">4 мл</span></button>
+            <button class="vol-opt" data-vol="5"><span class="v">5 мл</span></button>
+          </div>
+          <div class="pm-price-row">
+            <div class="card-price">${priceBlock(p, 3)}</div>
+            <button class="btn btn-primary pm-add">В корзину</button>
+          </div>
+        </div>
+      </div>`;
+
+    let selVol = 3;
+    $$(".vol-opt", body).forEach((opt) => {
+      opt.addEventListener("click", () => {
+        $$(".vol-opt", body).forEach((o) => o.classList.remove("active"));
+        opt.classList.add("active");
+        selVol = Number(opt.dataset.vol);
+        const priceEl = $(".card-price", body);
+        if (priceEl) priceEl.innerHTML = priceBlock(p, selVol);
+      });
+    });
+    $(".pm-add", body).addEventListener("click", () => { addToCart(p.id, selVol); closeProduct(); openCart(); });
+
+    productModal.classList.add("open");
+    productModal.setAttribute("aria-hidden", "false");
+    lockScroll(true);
+  }
+  function closeProduct() {
+    if (!productModal) return;
+    productModal.classList.remove("open");
+    productModal.setAttribute("aria-hidden", "true");
+    lockScroll(false);
   }
 
   /* =================================================================
@@ -265,6 +355,7 @@
     saveCart(cart);
     updateCartUI();
     toast("Добавлено в корзину");
+    if (window.reachGoal) window.reachGoal("add_to_cart");
   }
   function changeQty(key, delta) {
     const it = cart.find((i) => i.key === key);
@@ -367,6 +458,13 @@
     $("#cartPriceHint").hidden = unknown === 0;
   }
 
+  /* ---------- блокировка прокрутки фона при открытых слоях ---------- */
+  let scrollLocks = 0;
+  function lockScroll(on) {
+    scrollLocks = Math.max(0, scrollLocks + (on ? 1 : -1));
+    document.body.classList.toggle("no-scroll", scrollLocks > 0);
+  }
+
   /* ---------- открытие/закрытие корзины ---------- */
   const overlay = $("#overlay");
   const drawer = $("#cartDrawer");
@@ -375,11 +473,14 @@
     drawer.classList.add("open");
     drawer.setAttribute("aria-hidden", "false");
     overlay.hidden = false;
+    lockScroll(true);
   }
   function closeCart() {
+    if (!drawer.classList.contains("open")) return;
     drawer.classList.remove("open");
     drawer.setAttribute("aria-hidden", "true");
     overlay.hidden = true;
+    lockScroll(false);
   }
 
   /* =================================================================
@@ -392,10 +493,15 @@
     buildSendButtons();
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
+    lockScroll(true);
+    const firstInput = modal.querySelector('input[name="name"]');
+    if (firstInput) setTimeout(() => firstInput.focus(), 60);
   }
   function closeCheckout() {
+    if (!modal.classList.contains("open")) return;
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden", "true");
+    lockScroll(false);
   }
 
   function orderLines() {
@@ -530,6 +636,7 @@
 
   function afterSend(clear) {
     if (clear) { cart = []; saveCart(cart); updateCartUI(); }
+    if (window.reachGoal) window.reachGoal("order");
     closeCheckout();
     closeCart();
   }
@@ -593,8 +700,45 @@
     $("#checkoutClose").addEventListener("click", closeCheckout);
     overlay.addEventListener("click", closeCart);
     modal.addEventListener("click", (e) => { if (e.target === modal) closeCheckout(); });
+
+    // модалка товара
+    const productClose = $("#productClose");
+    if (productClose) productClose.addEventListener("click", closeProduct);
+    if (productModal) productModal.addEventListener("click", (e) => { if (e.target === productModal) closeProduct(); });
+
+    // поиск по каталогу
+    const searchInput = $("#catalogSearch");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        searchQuery = searchInput.value;
+        renderCatalog();
+        revealInit();
+      });
+    }
+    // сортировка
+    const sortSelect = $("#catalogSort");
+    if (sortSelect) {
+      sortSelect.addEventListener("change", () => {
+        sortMode = sortSelect.value;
+        renderCatalog();
+        revealInit();
+      });
+    }
+
+    // бургер-меню (мобильная навигация)
+    const navToggle = $("#navToggle");
+    const mainNav = $("#mainNav");
+    if (navToggle && mainNav) {
+      const setNav = (open) => {
+        mainNav.classList.toggle("open", open);
+        navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      };
+      navToggle.addEventListener("click", () => setNav(!mainNav.classList.contains("open")));
+      $$("a", mainNav).forEach((a) => a.addEventListener("click", () => setNav(false)));
+    }
+
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") { closeCart(); closeCheckout(); }
+      if (e.key === "Escape") { closeCart(); closeCheckout(); closeProduct(); }
     });
   }
 

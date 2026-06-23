@@ -4,9 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
-  <title>Распив нишевой парфюмерии</title>
+  <title>И.П. Жданов — распив нишевой парфюмерии: Amouage, Clive Christian, Byredo, Louis Vuitton</title>
+  <meta name="theme-color" content="#F0EEE9" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f6f3ee'/%3E%3Cpath d='M32 12 C44 30 46 38 32 50 C18 38 20 30 32 12 Z' fill='%23b9975b'/%3E%3C/svg%3E" />
-  <meta name="description" content="Распив оригинальной нишевой и люксовой парфюмерии: отливанты 3 и 5 мл. Clive Christian, Amouage, Byredo, Louis Vuitton, Nishane." />
+  <meta name="description" content="Распив оригинальной нишевой и люксовой парфюмерии: отливанты 3, 4 и 5 мл. Clive Christian, Amouage, Byredo, Louis Vuitton, Nishane, Penhaligon's." />
+
+  <!-- ВАЖНО: после покупки домена заменить https://ВАШ-САЙТ.ru на реальный адрес (во всех файлах) -->
+  <link rel="canonical" href="https://ВАШ-САЙТ.ru/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:site_name" content="И.П. Жданов" />
+  <meta property="og:title" content="И.П. Жданов — распив нишевой парфюмерии" />
+  <meta property="og:description" content="Пробуйте дорогие нишевые ароматы в форматах 3, 4 и 5 мл — без переплаты за полный флакон. Оригинал, отливаем при заказе." />
+  <meta property="og:url" content="https://ВАШ-САЙТ.ru/" />
+  <meta property="og:image" content="https://ВАШ-САЙТ.ru/assets/img/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="И.П. Жданов — распив нишевой парфюмерии" />
+  <meta name="twitter:description" content="Пробуйте дорогие нишевые ароматы в форматах 3, 4 и 5 мл — без переплаты за полный флакон." />
+  <meta name="twitter:image" content="https://ВАШ-САЙТ.ru/assets/img/og-cover.jpg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,11 +44,14 @@
         <span class="wordmark-name" data-shop-name>ATELIER</span>
         <span class="wordmark-sub" data-shop-tagline>Распив нишевой парфюмерии</span>
       </a>
-      <nav class="nav">
+      <nav class="nav" id="mainNav">
         <a href="#catalog">Каталог</a>
         <a href="#delivery">Оплата и доставка</a>
         <a href="#contacts">Контакты</a>
       </nav>
+      <button class="nav-toggle" id="navToggle" aria-label="Меню" aria-expanded="false" aria-controls="mainNav">
+        <span></span><span></span><span></span>
+      </button>
       <button class="cart-btn" id="cartBtn" aria-label="Открыть корзину">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4">
           <path d="M6 7h12l-1 13H7L6 7z" /><path d="M9 7a3 3 0 0 1 6 0" />
@@ -90,6 +110,45 @@
     </div>
   </section>
 
+  <!-- ПОЧЕМУ МЫ / ДОВЕРИЕ -->
+  <section class="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Почему у нас покупают</span>
+        <h2 class="section-title">Спокойно пробовать дорогое</h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature reveal">
+          <div class="feature-ic" aria-hidden="true">✦</div>
+          <h3>Только оригинал</h3>
+          <p>Разливаем из оригинальных флаконов, купленных в проверенных источниках. Никаких подделок и «реплик».</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-ic" aria-hidden="true">⚗</div>
+          <h3>Отливаем под заказ</h3>
+          <p>Каждый отливант наполняется свежим под ваш заказ — вы получаете именно тот аромат, что выбрали.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-ic" aria-hidden="true">◇</div>
+          <h3>Чистые атомайзеры</h3>
+          <p>Используем новые качественные атомайзеры с надёжным распылителем — удобно носить с собой.</p>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-ic" aria-hidden="true">➤</div>
+          <h3>Быстрая отправка</h3>
+          <p>Собираем и отправляем заказ в течение 1–2 рабочих дней по всей России: СДЭК, Почта, Boxberry.</p>
+        </div>
+      </div>
+
+      <div class="steps reveal">
+        <div class="step"><span class="step-n">1</span><p>Выбираете аромат и объём, добавляете в корзину</p></div>
+        <div class="step"><span class="step-n">2</span><p>Оставляете заявку — менеджер связывается с вами</p></div>
+        <div class="step"><span class="step-n">3</span><p>Подтверждаем наличие, сумму и способ доставки</p></div>
+        <div class="step"><span class="step-n">4</span><p>Оплата и отправка — получаете заказ</p></div>
+      </div>
+    </div>
+  </section>
+
   <!-- КАТАЛОГ -->
   <section class="catalog" id="catalog">
     <div class="container">
@@ -99,9 +158,23 @@
         <p class="section-sub">Выберите объём 3, 4 или 5 мл и добавьте в корзину.</p>
       </div>
 
+      <div class="catalog-tools reveal">
+        <label class="search-field">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="catalogSearch" placeholder="Поиск по названию, бренду, нотам…" autocomplete="off" aria-label="Поиск по каталогу" />
+        </label>
+        <select id="catalogSort" class="sort-select" aria-label="Сортировка">
+          <option value="default">По умолчанию</option>
+          <option value="price-asc">Сначала дешёвые</option>
+          <option value="price-desc">Сначала дорогие</option>
+          <option value="name">По названию (А–Я)</option>
+        </select>
+      </div>
+
       <div class="filters reveal" id="filters" aria-label="Фильтр по бренду"></div>
       <div class="filters filters-gender reveal" id="genderFilters" aria-label="Фильтр по полу"></div>
 
+      <p class="catalog-empty" id="catalogEmpty" hidden>По вашему запросу ничего не найдено. Попробуйте изменить поиск или фильтры.</p>
       <div class="grid" id="catalogGrid"></div>
     </div>
   </section>
@@ -219,8 +292,18 @@
     </div>
   </div>
 
+  <!-- КАРТОЧКА ТОВАРА (modal) -->
+  <div class="modal product-modal" id="productModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pmName">
+    <div class="modal-box pm-box">
+      <button class="icon-btn pm-close" id="productClose" aria-label="Закрыть">✕</button>
+      <div class="pm-grid" id="productBody"><!-- заполняется из app.js --></div>
+    </div>
+  </div>
+
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/analytics.js"></script>
   <script src="assets/js/products.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/cookie.js"></script>
 </body>
 </html>
