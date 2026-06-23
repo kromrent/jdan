@@ -10,9 +10,9 @@ const CONFIG = {
 
   // --- Контакты для приёма заказов ---
   // Телефон в человекочитаемом виде (для отображения):
-  phoneDisplay: "+7 (000) 000-00-00",
+  phoneDisplay: "+7 (985) 447-12-22",
   // Телефон для ссылок tel: и WhatsApp — ТОЛЬКО цифры, с кодом страны, без + и без скобок:
-  phoneRaw: "70000000000",
+  phoneRaw: "79854471222",
   // Telegram — ник без @ (например: ivanov_perfume):
   telegram: "username",
   // E-mail для отображения и mailto-фолбэка:
@@ -23,8 +23,8 @@ const CONFIG = {
 
   // --- Какие каналы оформления показывать в корзине (true/false) ---
   channels: {
-    whatsapp: true,
-    telegram: true,
+    whatsapp: false,
+    telegram: false,
     email: true,
     callback: true,
   },
