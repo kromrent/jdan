@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# ВАЖНО: после покупки домена заменить ВАШ-САЙТ.ru на реальный адрес
-Sitemap: https://ВАШ-САЙТ.ru/sitemap.xml
+Sitemap: https://raspivshop.ru/sitemap.xml
