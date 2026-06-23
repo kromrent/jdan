@@ -88,7 +88,11 @@
         `<p>${esc(lg.fio || "")}</p>` +
         `<p>ИНН: ${esc(lg.inn || "")}</p>` +
         `<p>ОГРНИП: ${esc(lg.ogrnip || "")}</p>` +
-        `<p>${esc(lg.address || "")}</p>`;
+        `<p>${esc(lg.address || "")}</p>` +
+        (lg.account ? `<p>Р/с: ${esc(lg.account)}</p>` : "") +
+        (lg.bankName ? `<p>Банк: ${esc(lg.bankName)}</p>` : "") +
+        (lg.bik ? `<p>БИК: ${esc(lg.bik)}</p>` : "") +
+        (lg.corrAccount ? `<p>К/с: ${esc(lg.corrAccount)}</p>` : "");
     }
     const copy = $("#footerCopy");
     if (copy) copy.innerHTML = `© ${new Date().getFullYear()} ${esc(CONFIG.shopName)}. Все права защищены.`;

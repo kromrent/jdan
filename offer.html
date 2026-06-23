@@ -24,6 +24,9 @@
       <p>ОГРНИП: <span id="oOgrnip">[ОГРНИП]</span></p>
       <p id="oAddr">[Адрес регистрации]</p>
       <p>Телефон: <span id="oPhone">[телефон]</span> · E-mail: <span id="oEmail">[почта]</span></p>
+      <p>Р/с: <span id="oAccount"></span></p>
+      <p>Банк: <span id="oBank"></span> · БИК: <span id="oBik"></span></p>
+      <p>К/с: <span id="oCorr"></span></p>
     </div>
 
     <h2>1. Общие положения</h2>
@@ -77,6 +80,7 @@
       var set = function (id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
       set("oFio", L.fio); set("oInn", L.inn); set("oOgrnip", L.ogrnip); set("oAddr", L.address);
       set("oPhone", CONFIG.phoneDisplay); set("oEmail", CONFIG.email);
+      set("oAccount", L.account); set("oBank", L.bankName); set("oBik", L.bik); set("oCorr", L.corrAccount);
     })();
   </script>
 </body>
