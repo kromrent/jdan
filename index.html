@@ -146,7 +146,7 @@
       <span class="eyebrow">Сервис</span>
       <h2 class="section-title">Оплата и доставка</h2>
       <ul class="delivery-list" id="deliveryList"></ul>
-      <p class="delivery-foot">Оформление заказа — заявкой через мессенджер, почту или звонок. Менеджер свяжется с вами, подтвердит наличие, сумму и способ доставки.</p>
+      <p class="delivery-foot">Оформление заказа — по телефону. Соберите корзину и позвоните нам: менеджер примет заказ, подтвердит наличие, сумму и способ доставки.</p>
     </div>
   </section>
 
@@ -218,38 +218,12 @@
         <button class="icon-btn" id="checkoutClose" aria-label="Закрыть">✕</button>
       </div>
 
-      <form id="checkoutForm" class="checkout-form" novalidate>
-        <label class="field">
-          <span>Имя <i>*</i></span>
-          <input type="text" name="name" required autocomplete="name" />
-        </label>
-        <label class="field">
-          <span>Телефон <i>*</i></span>
-          <input type="tel" name="phone" required autocomplete="tel" placeholder="+7 ___ ___-__-__" />
-        </label>
-        <label class="field">
-          <span>Город / адрес доставки</span>
-          <input type="text" name="address" autocomplete="street-address" />
-        </label>
-        <label class="field">
-          <span>Комментарий к заказу</span>
-          <textarea name="comment" rows="2"></textarea>
-        </label>
-
-        <label class="check">
-          <input type="checkbox" name="agreePdn" required />
-          <span>Согласен(а) на обработку персональных данных согласно <a href="privacy.html" target="_blank" rel="noopener">политике конфиденциальности</a>.</span>
-        </label>
-        <label class="check">
-          <input type="checkbox" name="agreeOffer" required />
-          <span>Ознакомлен(а) и согласен(а) с условиями <a href="offer.html" target="_blank" rel="noopener">публичной оферты</a>.</span>
-        </label>
-
-        <p class="form-error" id="formError" hidden></p>
-
-        <p class="send-label">Отправить заявку:</p>
-        <div class="send-buttons" id="sendButtons"></div>
-      </form>
+      <div class="checkout-call">
+        <p class="checkout-call-lead">Чтобы оформить заказ, позвоните нам — менеджер примет заявку, подтвердит наличие, сумму и способ доставки:</p>
+        <a class="btn btn-primary btn-block call-phone" id="callPhone" href="#">+7 (000) 000-00-00</a>
+        <p class="checkout-call-note">Назовите менеджеру товары из корзины:</p>
+        <div class="checkout-order" id="checkoutOrder"></div>
+      </div>
     </div>
   </div>
 

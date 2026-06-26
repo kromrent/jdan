@@ -74,6 +74,9 @@
     if (tg) tg.href = "https://t.me/" + CONFIG.telegram;
     const em = $("#footEmail");
     if (em) { em.textContent = CONFIG.email; em.href = "mailto:" + CONFIG.email; }
+    // кнопка «Позвонить» в окне оформления заказа
+    const callBtn = $("#callPhone");
+    if (callBtn) { callBtn.textContent = "Позвонить: " + CONFIG.phoneDisplay; callBtn.href = "tel:+" + CONFIG.phoneRaw; }
 
     // оплата/доставка
     const dl = $("#deliveryList");
@@ -490,12 +493,17 @@
 
   function openCheckout() {
     if (cart.length === 0) return;
-    buildSendButtons();
+    // показываем состав заказа, чтобы покупатель назвал его по телефону (форму с ПДн не собираем)
+    const orderEl = $("#checkoutOrder");
+    if (orderEl) {
+      const { lines, totalStr } = orderLines();
+      orderEl.innerHTML =
+        lines.map((l) => `<div class="co-line">${esc(l)}</div>`).join("") +
+        `<div class="co-total">${esc(totalStr)}</div>`;
+    }
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     lockScroll(true);
-    const firstInput = modal.querySelector('input[name="name"]');
-    if (firstInput) setTimeout(() => firstInput.focus(), 60);
   }
   function closeCheckout() {
     if (!modal.classList.contains("open")) return;
